@@ -17,7 +17,9 @@ letter              = ascii_letter | ascii_letter | "_" .
 
 // I made up this unicode_char definition to things that present okay in a terminal.
 // It technically doesn't even leave ASCII.
-unicode_char = letter | letter | "\x20" … "\x7F" .
+unicode_char = letter | letter | letter | // More likely to get a regular letter
+               // Use a little extended ASCII but skip backslash because it messes things up
+               ( "\x20" … "\x5B" | "\x5D" … "\x7F" ) .
 
 unquoted_identifier = ( letter ) { letter | digit } .
 quoted_identifier   = `"` unicode_char { unicode_char } `"` .
