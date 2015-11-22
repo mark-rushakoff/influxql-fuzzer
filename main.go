@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -9,6 +11,7 @@ import (
 	"time"
 
 	"github.com/crunchyroll/rebnf"
+	"github.com/influxdb/influxdb/influxql"
 )
 
 func init() {
@@ -48,7 +51,16 @@ func main() {
 	ctx := rebnf.NewCtx(maxRepetitions, maxRecursionDepth, padding, isDebug)
 
 	for i := 0; i < numProductions; i++ {
-		ctx.Random(os.Stdout, grammar, production)
+		buf := new(bytes.Buffer)
+		ctx.Random(buf, grammar, production)
+
+		line, _ := ioutil.ReadAll(buf)
+
+		fmt.Fprintln(os.Stdout, string(line))
+		if _, err := influxql.NewParser(bytes.NewReader(line)).ParseStatement(); err != nil {
+			log.Println(err)
+		}
+
 		fmt.Fprintln(os.Stdout)
 	}
 }

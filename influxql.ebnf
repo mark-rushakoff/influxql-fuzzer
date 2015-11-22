@@ -108,7 +108,7 @@ delete_stmt  = "DELETE" ws from_clause ws where_clause .
 
 // DROP CONTINUOUS QUERY
 
-drop_continuous_query_stmt = "DROP CONTINUOUS QUERY" ws query_name .
+drop_continuous_query_stmt = "DROP CONTINUOUS QUERY" ws query_name ws "ON" ws db_name .
 
 // DROP DATABASE
 
