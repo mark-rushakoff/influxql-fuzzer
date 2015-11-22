@@ -56,11 +56,13 @@ func main() {
 
 		line, _ := ioutil.ReadAll(buf)
 
-		fmt.Fprintln(os.Stdout, string(line))
-		if _, err := influxql.NewParser(bytes.NewReader(line)).ParseStatement(); err != nil {
-			log.Println(err)
+		fmt.Println("GENERATED: " + string(line))
+		if stmt, err := influxql.ParseStatement(string(line)); err != nil {
+			fmt.Fprintln(os.Stderr, "ERROR    : "+err.Error())
+		} else {
+			fmt.Println("SANITIZED: " + stmt.String())
 		}
 
-		fmt.Fprintln(os.Stdout)
+		fmt.Println()
 	}
 }
