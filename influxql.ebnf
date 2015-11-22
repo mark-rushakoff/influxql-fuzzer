@@ -244,7 +244,7 @@ unary_expr       = "(" expr ")" | var_ref | time_lit | string_lit | int_lit |
 // Other
 ////////////////////////////////
 
-alias            = "AS" ws identifier .
+alias            = ws "AS" ws identifier .
 
 db_name          = identifier .
 
