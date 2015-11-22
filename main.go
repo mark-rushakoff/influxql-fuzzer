@@ -60,7 +60,12 @@ func main() {
 		if stmt, err := influxql.ParseStatement(string(line)); err != nil {
 			fmt.Fprintln(os.Stderr, "ERROR    : "+err.Error())
 		} else {
-			fmt.Println("SANITIZED: " + stmt.String())
+			sanitized := stmt.String()
+			fmt.Println("SANITIZED: " + sanitized)
+			resanitized := influxql.MustParseStatement(sanitized).String()
+			if resanitized != sanitized {
+				fmt.Println("IMPURE   : " + resanitized)
+			}
 		}
 
 		fmt.Println()

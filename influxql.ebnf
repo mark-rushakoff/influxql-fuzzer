@@ -32,7 +32,7 @@ string_lit          = `'` { unicode_char } `'` .
 duration_unit       = "u" | "µ" | "s" | "h" | "d" | "w" | "ms" .
 duration_lit        = int_lit duration_unit .
 
-time_lit            = "2006-01-02 15:04:05.999999" | "2006-01-02" .
+time_lit            = "'2006-01-02 15:04:05.999999'" | "'2006-01-02'" .
 
 bool_lit            = "TRUE" | "true" | "FALSE" | "false" .
 
@@ -60,6 +60,7 @@ statement           = alter_retention_policy_stmt |
                       show_continuous_queries_stmt |
                       show_databases_stmt |
                       show_field_keys_stmt |
+                      show_grants_stmt |
                       show_measurements_stmt |
                       show_retention_policies |
                       show_series_stmt |
@@ -106,7 +107,7 @@ create_user_stmt = "CREATE USER" ws user_name ws "WITH PASSWORD" ws password
 
 // DELETE
 
-delete_stmt  = "DELETE" ws from_clause ws where_clause .
+delete_stmt  = "DELETE FROM" ws measurement ws where_clause .
 
 // DROP CONTINUOUS QUERY
 
@@ -118,7 +119,7 @@ drop_database_stmt = "DROP DATABASE" ws db_name .
 
 // DROP MEASUREMENT
 
-drop_measurement_stmt = "DROP MEASUREMENT" ws measurement .
+drop_measurement_stmt = "DROP MEASUREMENT" ws measurement_name .
 
 // DROP RETENTION POLICY
 
@@ -126,7 +127,7 @@ drop_retention_policy_stmt = "DROP RETENTION POLICY" ws policy_name ws on_clause
 
 // DROP SERIES
 
-drop_series_stmt = "DROP SERIES" [ from_clause ] [ where_clause ] .
+drop_series_stmt = "DROP SERIES" ( from_clause | where_clause | from_clause where_clause ) .
 
 // DROP SUBSCRIPTION
 
@@ -152,10 +153,13 @@ show_databases_stmt = "SHOW DATABASES" .
 
 show_field_keys_stmt = "SHOW FIELD KEYS" [ from_clause ] .
 
+// SHOW GRANTS
+
+show_grants_stmt = "SHOW GRANTS FOR" ws user_name .
+
 // SHOW MEASUREMENTS
 
-show_measurements_stmt = "SHOW MEASUREMENTS" [ where_clause ] [ group_by_clause ] [ limit_clause ]
-                         [ offset_clause ] .
+show_measurements_stmt = "SHOW MEASUREMENTS" [ with_measurement_clause ] [ where_clause ] [ limit_clause ] [ offset_clause ] .
 
 // SHOW RETENTION POLICIES
 
@@ -227,6 +231,8 @@ order_by_clause = ws "ORDER BY" ws sort_fields .
 to_clause       = ws "TO" ws user_name .
 
 where_clause    = ws "WHERE" ws expr .
+
+with_measurement_clause = ws "WITH MEASUREMENT" ws ( "=" ws measurement | "=~" ws regex_lit ) .
 
 with_tag_clause = ws "WITH KEY" ( ws "=" tag_key | ws "IN (" tag_keys ")" ) .
 
