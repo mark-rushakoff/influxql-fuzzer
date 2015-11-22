@@ -74,15 +74,15 @@ statement           = alter_retention_policy_stmt |
 
 // ALTER RETENTION POLICY
 
-alter_retention_policy_stmt  = "ALTER RETENTION POLICY" ws policy_name ws "ON" ws
-                               db_name ws retention_policy_option
+alter_retention_policy_stmt  = "ALTER RETENTION POLICY" ws policy_name on_clause
+                               ws retention_policy_option
                                [ ws retention_policy_option ]
                                [ ws retention_policy_option ] .
 
 // CREATE CONTINUOUS QUERY
 
-create_continuous_query_stmt = "CREATE CONTINUOUS QUERY" ws query_name ws "ON" ws db_name ws
-                               "BEGIN" ws select_stmt ws "END" .
+create_continuous_query_stmt = "CREATE CONTINUOUS QUERY" ws query_name on_clause
+                               ws "BEGIN" ws select_stmt ws "END" .
 
 // CREATE DATABASE
 
@@ -90,9 +90,9 @@ create_database_stmt = "CREATE DATABASE" ws db_name .
 
 // CREATE RETENTION POLICY
 
-create_retention_policy_stmt = "CREATE RETENTION POLICY" ws policy_name ws "ON" ws
-                               db_name ws retention_policy_duration ws
-                               retention_policy_replication
+create_retention_policy_stmt = "CREATE RETENTION POLICY" ws policy_name on_clause
+                               ws retention_policy_duration
+                               ws retention_policy_replication
                                [ ws "DEFAULT" ] .
 
 // CREATE SUBSCRIPTION
@@ -110,7 +110,7 @@ delete_stmt  = "DELETE" ws from_clause ws where_clause .
 
 // DROP CONTINUOUS QUERY
 
-drop_continuous_query_stmt = "DROP CONTINUOUS QUERY" ws query_name ws "ON" ws db_name .
+drop_continuous_query_stmt = "DROP CONTINUOUS QUERY" ws query_name on_clause .
 
 // DROP DATABASE
 
@@ -122,7 +122,7 @@ drop_measurement_stmt = "DROP MEASUREMENT" ws measurement .
 
 // DROP RETENTION POLICY
 
-drop_retention_policy_stmt = "DROP RETENTION POLICY" ws policy_name ws "ON" ws db_name .
+drop_retention_policy_stmt = "DROP RETENTION POLICY" ws policy_name ws on_clause .
 
 // DROP SERIES
 
@@ -138,7 +138,7 @@ drop_user_stmt = "DROP USER" ws user_name .
 
 // GRANT
 
-grant_stmt = "GRANT" ws privilege [ on_clause ] to_clause .
+grant_stmt = "GRANT" ws privilege on_clause to_clause .
 
 // SHOW CONTINUOUS QUERIES
 
@@ -159,7 +159,7 @@ show_measurements_stmt = "SHOW MEASUREMENTS" [ where_clause ] [ group_by_clause 
 
 // SHOW RETENTION POLICIES
 
-show_retention_policies = "SHOW RETENTION POLICIES ON" ws db_name .
+show_retention_policies = "SHOW RETENTION POLICIES" on_clause .
 
 // SHOW SERIES
 
@@ -194,7 +194,7 @@ show_users_stmt = "SHOW USERS" .
 
 // REVOKE
 
-revoke_stmt = "REVOKE" ws privilege [ ws "ON" ws db_name ] ws "FROM" ws user_name .
+revoke_stmt = "REVOKE" ws privilege [ on_clause ] ws "FROM" ws user_name .
 
 // SELECT
 
@@ -220,11 +220,11 @@ slimit_clause   = ws "SLIMIT" ws int_lit .
 
 soffset_clause  = ws "SOFFSET" ws int_lit .
 
-on_clause       = ws db_name .
+on_clause       = ws "ON" ws db_name .
 
 order_by_clause = ws "ORDER BY" ws sort_fields .
 
-to_clause       = ws user_name .
+to_clause       = ws "TO" ws user_name .
 
 where_clause    = ws "WHERE" ws expr .
 
