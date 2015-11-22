@@ -270,7 +270,7 @@ measurements     = measurement { "," ws measurement } .
 
 measurement_name = identifier .
 
-password         = identifier .
+password         = string_lit .
 
 policy_name      = identifier .
 
