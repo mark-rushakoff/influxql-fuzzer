@@ -1,0 +1,304 @@
+// Keywords are actually case insensitive, but we'll go with either all uppercase or all lowercase.
+// And something's weird with the dependencies here, and productions whose names begin with an uppercase letter
+// get printed out funny; therefore we're prepending "kw" to the names to work around that bug.
+// kwTRUE = "TRUE" | "true" .
+// kwFALSE = "FALSE" | "false" .
+
+// Explicit whitespace sometimes necessary. More likely to get single space than double space
+ws = " " | " " | " " | "  " | "   " .
+
+newline = "\x0A" .
+
+ascii_letter        = "A" … "Z" | "a" … "z" .
+digit               = "0" … "9" .
+
+// Inflating probablity of ascii_letter here
+letter              = ascii_letter | ascii_letter | "_" .
+
+// I made up this unicode_char definition to things that present okay in a terminal.
+// It technically doesn't even leave ASCII.
+unicode_char = letter | letter | "\x20" … "\x7F" .
+
+unquoted_identifier = ( letter ) { letter | digit } .
+quoted_identifier   = `"` unicode_char { unicode_char } `"` .
+identifier          = unquoted_identifier | quoted_identifier .
+
+int_lit             = ( "1" … "9" ) { digit } .
+float_lit           = int_lit "." int_lit .
+string_lit          = `'` { unicode_char } `'` .
+
+duration_unit       = "u" | "µ" | "s" | "h" | "d" | "w" | "ms" .
+duration_lit        = int_lit duration_unit .
+
+time_lit            = "2006-01-02 15:04:05.999999" | "2006-01-02" .
+
+bool_lit            = "TRUE" | "true" | "FALSE" | "false" .
+
+// Actually uses a unicode_char, but that will usually result in a bad regex.
+// regex_lit           = "/" { unicode_char } "/" .
+regex_lit           = "/" { letter } "/" .
+
+query               = statement { ";" statement } .
+
+statement           = alter_retention_policy_stmt |
+                      create_continuous_query_stmt |
+                      create_database_stmt |
+                      create_retention_policy_stmt |
+                      create_subscription_stmt |
+                      create_user_stmt |
+                      delete_stmt |
+                      drop_continuous_query_stmt |
+                      drop_database_stmt |
+                      drop_measurement_stmt |
+                      drop_retention_policy_stmt |
+                      drop_series_stmt |
+                      drop_subscription_stmt |
+                      drop_user_stmt |
+                      grant_stmt |
+                      show_continuous_queries_stmt |
+                      show_databases_stmt |
+                      show_field_keys_stmt |
+                      show_measurements_stmt |
+                      show_retention_policies |
+                      show_series_stmt |
+                      show_shard_groups_stmt |
+                      show_shards_stmt |
+                      show_subscriptions_stmt|
+                      show_tag_keys_stmt |
+                      show_tag_values_stmt |
+                      show_users_stmt |
+                      revoke_stmt |
+                      select_stmt .
+
+// ALTER RETENTION POLICY
+
+alter_retention_policy_stmt  = "ALTER RETENTION POLICY" ws policy_name ws "ON" ws
+                               db_name ws retention_policy_option
+                               [ ws retention_policy_option ]
+                               [ ws retention_policy_option ] .
+
+// CREATE CONTINUOUS QUERY
+
+create_continuous_query_stmt = "CREATE CONTINUOUS QUERY" ws query_name ws "ON" ws db_name ws
+                               "BEGIN" ws select_stmt ws "END" .
+
+// CREATE DATABASE
+
+create_database_stmt = "CREATE DATABASE" ws db_name .
+
+// CREATE RETENTION POLICY
+
+create_retention_policy_stmt = "CREATE RETENTION POLICY" ws policy_name ws "ON" ws
+                               db_name ws retention_policy_duration ws
+                               retention_policy_replication
+                               [ ws "DEFAULT" ] .
+
+// CREATE SUBSCRIPTION
+
+create_subscription_stmt = "CREATE SUBSCRIPTION" ws subscription_name ws "ON" ws db_name "." retention_policy ws "DESTINATIONS" ws ("ANY"|"ALL") ws host { "," ws host} .
+
+// CREATE USER
+
+create_user_stmt = "CREATE USER" ws user_name ws "WITH PASSWORD" ws password
+                   [ ws "WITH ALL PRIVILEGES" ] .
+
+// DELETE
+
+delete_stmt  = "DELETE" ws from_clause ws where_clause .
+
+// DROP CONTINUOUS QUERY
+
+drop_continuous_query_stmt = "DROP CONTINUOUS QUERY" ws query_name .
+
+// DROP DATABASE
+
+drop_database_stmt = "DROP DATABASE" ws db_name .
+
+// DROP MEASUREMENT
+
+drop_measurement_stmt = "DROP MEASUREMENT" ws measurement .
+
+// DROP RETENTION POLICY
+
+drop_retention_policy_stmt = "DROP RETENTION POLICY" ws policy_name ws "ON" ws db_name .
+
+// DROP SERIES
+
+drop_series_stmt = "DROP SERIES" [ from_clause ] [ where_clause ] .
+
+// DROP SUBSCRIPTION
+
+drop_subscription_stmt = "DROP SUBSCRIPTION" ws subscription_name ws "ON" ws db_name "." retention_policy .
+
+// DROP USER
+
+drop_user_stmt = "DROP USER" ws user_name .
+
+// GRANT
+
+grant_stmt = "GRANT" ws privilege [ on_clause ] to_clause .
+
+// SHOW CONTINUOUS QUERIES
+
+show_continuous_queries_stmt = "SHOW CONTINUOUS QUERIES" .
+
+// SHOW DATABASES
+
+show_databases_stmt = "SHOW DATABASES" .
+
+// SHOW FIELD KEYS
+
+show_field_keys_stmt = "SHOW FIELD KEYS" [ from_clause ] .
+
+// SHOW MEASUREMENTS
+
+show_measurements_stmt = "SHOW MEASUREMENTS" [ where_clause ] [ group_by_clause ] [ limit_clause ]
+                         [ offset_clause ] .
+
+// SHOW RETENTION POLICIES
+
+show_retention_policies = "SHOW RETENTION POLICIES ON" ws db_name .
+
+// SHOW SERIES
+
+show_series_stmt = "SHOW SERIES" [ from_clause ] [ where_clause ] [ group_by_clause ]
+                   [ limit_clause ] [ offset_clause ] .
+
+// SHOW SHARD GROUPS
+
+show_shard_groups_stmt = "SHOW SHARD GROUPS" .
+
+// SHOW SHARDS
+
+show_shards_stmt = "SHOW SHARDS" .
+
+// SHOW SUBSCRIPTIONS
+
+show_subscriptions_stmt = "SHOW SUBSCRIPTIONS" .
+
+// SHOW TAG KEYS
+
+show_tag_keys_stmt = "SHOW TAG KEYS" [ from_clause ] [ where_clause ] [ group_by_clause ]
+                     [ limit_clause ] [ offset_clause ] .
+
+// SHOW TAG VALUES
+
+show_tag_values_stmt = "SHOW TAG VALUES" [ from_clause ] with_tag_clause [ where_clause ]
+                       [ group_by_clause ] [ limit_clause ] [ offset_clause ] .
+
+// SHOW USERS
+
+show_users_stmt = "SHOW USERS" .
+
+// REVOKE
+
+revoke_stmt = "REVOKE" ws privilege [ ws "ON" ws db_name ] ws "FROM" ws user_name .
+
+// SELECT
+
+select_stmt = "SELECT" ws fields from_clause [ into_clause ] [ where_clause ]
+              [ group_by_clause ] [ order_by_clause ] [ limit_clause ]
+              [ offset_clause ] [ slimit_clause ] [ soffset_clause ] .
+
+////////////////////////////////
+// Clauses
+////////////////////////////////
+
+from_clause     = ws "FROM" ws measurements .
+
+group_by_clause = ws "GROUP BY" ws dimensions ws "fill(" fill_option ")" .
+
+into_clause     = ws "INTO" ws measurement .
+
+limit_clause    = ws "LIMIT" ws int_lit .
+
+offset_clause   = ws "OFFSET" ws int_lit .
+
+slimit_clause   = ws "SLIMIT" ws int_lit .
+
+soffset_clause  = ws "SOFFSET" ws int_lit .
+
+on_clause       = ws db_name .
+
+order_by_clause = ws "ORDER BY" ws sort_fields .
+
+to_clause       = ws user_name .
+
+where_clause    = ws "WHERE" ws expr .
+
+with_tag_clause = ws "WITH KEY" ( ws "=" tag_key | ws "IN (" tag_keys ")" ) .
+
+////////////////////////////////
+// Expressions
+////////////////////////////////
+
+binary_op        = ws ( "+" | "-" | "*" | "/" | "AND" | "OR" | "=" | "!=" | "<" |
+                   "<=" | ">" | ">=" ) ws .
+
+expr             = unary_expr { binary_op unary_expr } .
+
+unary_expr       = "(" expr ")" | var_ref | time_lit | string_lit | int_lit |
+                   float_lit | bool_lit | duration_lit | regex_lit .
+
+////////////////////////////////
+// Other
+////////////////////////////////
+
+alias            = "AS" ws identifier .
+
+db_name          = identifier .
+
+dimension        = expr .
+
+dimensions       = dimension { "," ws dimension } .
+
+field_key        = identifier .
+
+field            = expr [ alias ] .
+
+fields           = field { "," ws field } .
+
+fill_option      = "null" | "none" | "previous" | int_lit | float_lit .
+
+host             = string_lit .
+
+measurement      = measurement_name |
+                   ( policy_name "." measurement_name ) |
+                   ( db_name "." [ policy_name ] "." measurement_name ) .
+
+measurements     = measurement { "," ws measurement } .
+
+measurement_name = identifier .
+
+password         = identifier .
+
+policy_name      = identifier .
+
+privilege        = "ALL" [ ws "PRIVILEGES" ] | ws "READ" | ws "WRITE" .
+
+query_name       = identifier .
+
+retention_policy = identifier .
+
+retention_policy_option      = retention_policy_duration |
+                               retention_policy_replication |
+                               "DEFAULT" .
+
+retention_policy_duration    = "DURATION" ws duration_lit .
+retention_policy_replication = "REPLICATION" ws int_lit .
+
+series_id        = int_lit .
+
+sort_field       = field_key [ ws "ASC" | ws "DESC" ] .
+
+sort_fields      = sort_field { "," ws sort_field } .
+
+subscription_name = identifier .
+
+tag_key          = identifier .
+
+tag_keys         = tag_key { "," ws tag_key } .
+
+user_name        = identifier .
+
+var_ref          = measurement .
